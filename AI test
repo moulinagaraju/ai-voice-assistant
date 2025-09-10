@@ -1,0 +1,45 @@
+import pvporcupine
+import pyaudio
+import struct
+import os
+
+def wake_word_listener():
+    print("🔊 Starting wake word listener...")  # Add this line for debug
+    keyword_path = "Friday_en_windows_v3_0_0.ppn"  # Replace with your real file
+
+    porcupine = pvporcupine.create(
+        access_key="Q8DqUKVAP0QY1fkWAVby6b6tvC4BLnUvkbk0UTzlGj16KmgJNbFVFw==",  # 🔑 Replace with your real key
+        keyword_paths=[keyword_path]
+    )
+
+    pa = pyaudio.PyAudio()
+    stream = pa.open(
+        rate=porcupine.sample_rate,
+        channels=1,
+        format=pyaudio.paInt16,
+        input=True,
+        frames_per_buffer=porcupine.frame_length
+    )
+
+    print("🎙️ Say 'Friday' to wake the assistant...")
+
+    try:
+        while True:
+            pcm = stream.read(porcupine.frame_length, exception_on_overflow=False)
+            pcm = struct.unpack_from("h" * porcupine.frame_length, pcm)
+
+            result = porcupine.process(pcm)
+            if result >= 0:
+                print("✅ Wake word detected!")
+                os.system("start background_assistant.exe")
+                break
+
+    except Exception as e:
+        print("❌ ERROR:", e)
+    finally:
+        stream.stop_stream()
+        stream.close()
+        pa.terminate()
+        porcupine.delete()
+
+wake_word_listener()
