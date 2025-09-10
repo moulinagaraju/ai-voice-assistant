@@ -1,0 +1,1180 @@
+import uuid
+import datetime
+import os
+import sys
+import time
+import webbrowser
+import pyautogui
+import pyttsx3 #!pip install pyttsx3
+import speech_recognition as sr
+import json
+import pickle
+import cv2
+#from tensorflow.keras.models import load_model
+#from tensorflow.keras.preprocessing.sequence import pad_sequences
+import random
+import numpy as np
+import psutil 
+import subprocess
+from gtts import gTTS
+import playsound
+import tempfile
+import os
+
+def speak(text, language='en'):
+    try:
+        tts = gTTS(text=text, lang=language)
+        
+        # Save to a real temp file instead of NamedTemporaryFile
+        temp_path = os.path.join(tempfile.gettempdir(), f"Friday_voice_{uuid.uuid4().hex}.mp3")
+        tts.save(temp_path)
+
+        # Play the audio
+        playsound.playsound(temp_path)
+
+        print(f"SPEAK ({language}):", text)
+
+        # Optional: delete the temp file manually
+        os.remove(temp_path)
+
+    except Exception as e:
+        print("Speech Error:", e)
+def is_telugu(text):
+    for char in text:
+        if '\u0C00' <= char <= '\u0C7F':
+            return True
+    return False
+
+
+# from elevenlabs import generate, play
+# from elevenlabs import set_api_key
+# from api_key import api_key_data
+# set_api_key(api_key_data)
+
+# def engine_talk(query):
+#     audio = generate(
+#         text=query, 
+#         voice='Grace',
+#         model="eleven_monolingual_v1"
+#     )
+#     play(audio)
+
+def initialize_engine():
+    engine = pyttsx3.init("sapi5")
+    voices = engine.getProperty('voices')
+    engine.setProperty('voice', voices[1].id)
+    rate = engine.getProperty('rate')
+    engine.setProperty('rate', rate-50)
+    volume = engine.getProperty('volume')
+    engine.setProperty('volume', volume+0.25)
+    return engine
+
+def wake_word_trigger(command):
+    """Check if the wake word is present in the command."""
+    wake_words = ["Friday", "hey Friday", "hello Friday", "hi Friday"]
+    for word in wake_words:
+        if word in command.lower():
+            return True
+        return False
+def greeting():
+        hour = datetime.datetime.now().hour
+        if hour < 12:
+            speak("Good Morning Sir")
+        elif hour < 18:
+            speak("Good Afternoon Sir")
+        else:
+            speak("Good Evening Sir")
+
+def engine_talk():
+    """Initialize the text-to-speech engine and greet the user."""
+    print("Initializing the text-to-speech engine...")
+    engine = initialize_engine()
+    engine.say("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+    engine.runAndWait()
+    print("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+    speak("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+import speech_recognition as sr
+
+def command():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("🎧 Listening...")
+        audio = r.listen(source)
+
+    try:
+        query = r.recognize_google(audio, language='en-in')
+        print("📢 Recognized command:", query)
+        return query
+    except sr.UnknownValueError:
+        print("⚠️ Could not understand audio.")
+        return ""
+    except sr.RequestError:
+        print("❌ Could not connect to Google.")
+        return ""
+
+
+def cal_time():
+    now = datetime.datetime.now()
+    current_time = now.strftime("%I:%M %p")
+    speak(f"Sir, the current time is {current_time}")
+    print(f"Current time: {current_time}")
+    return current_time
+def cal_date():
+    now = datetime.datetime.now()
+    current_date = now.strftime("%d %B %Y")
+    speak(f"Sir, today's date is {current_date}")
+    print(f"Today's date: {current_date}")
+    return current_date
+def cal_year():
+    now = datetime.datetime.now()
+    current_year = now.strftime("%Y")
+    speak(f"Sir, the current year is {current_year}")
+    print(f"Current year: {current_year}")
+    return current_year
+def cal_month():
+    now = datetime.datetime.now()
+    current_month = now.strftime("%B")
+    speak(f"Sir, the current month is {current_month}")
+    print(f"Current month: {current_month}")
+    return current_month
+def birth_day_wish():
+    now = datetime.datetime.now()
+    current_date = now.strftime("%d %B")
+    birthday = "10 July"  # Replace with your birthday
+    if current_date == birthday:
+        speak("Happy Birthday Sir! Wishing you a wonderful day filled with joy and happiness!")
+        print("Happy Birthday Sir! Wishing you a wonderful day filled with joy and happiness!")
+    else:
+        speak("Sir, today is not your birthday.")
+        print("Sir, today is not your birthday.")
+
+def cal_day():
+    day = datetime.datetime.today().weekday() + 1
+    day_dict={
+        1:"Monday",
+        2:"Tuesday",
+        3:"Wednesday",
+        4:"Thursday",
+        5:"Friday",
+        6:"Saturday",
+        7:"Sunday"
+    }
+    if day in day_dict.keys():
+        day_of_week = day_dict[day]
+        print(day_of_week)
+    return day_of_week
+
+def nuvvu_yevaru(command):
+    """provide information about the Friday."""
+    speak("sir, nenu Friday, meeru cheppina virtual assistant ni. Nenu mee sahayam kosam unnanu, meeru naatho kalisi chesukovachu.")
+
+def who_am_i(command):
+    """Provide information about the user."""
+    speak("Sir, you are Eeswar Uday, a student at NRI Institute of Technology. You are currently pursuing your studies and have a keen interest in technology and programming.")
+    speak("If you have any questions or need assistance, feel free to ask!")
+    print("You are Eeswar Uday, a student at NRI Institute of Technology. You are currently pursuing your studies and have a keen interest in technology and programming.")
+
+
+def who_are_you():
+    speak("Hello Sir, I am Friday, your virtual assistant. I am here to assist you with various tasks and provide information as needed.")
+    speak("I can help you with scheduling, opening applications, browsing the internet, and much more. How can I assist you today?")
+def who_is_Friday():
+    return who_are_you()
+def who__is_your_name():
+    return who_are_you()
+def what_is_your_name():
+    return who_are_you()
+
+def who_is_your_creator():
+    """Provide information about the creator of the virtual assistant."""
+    speak("I was created by Eeswar Uday, a student at NRI Institute of Technology. He is currently pursuing his studies and has developed me to assist with various tasks.")
+    speak("If you have any questions or need assistance, feel free to ask!")
+def who_created_you():
+    return who_is_your_creator()
+def who_made_you():
+    return who_is_your_creator()
+def who_created_Friday():
+    return who_is_your_creator()
+def who_is_Friday_creator():
+    return who_is_your_creator()
+
+
+def social_media(command):
+    if 'facebook' in command:
+        speak("opening your facebook")
+        webbrowser.open("https://www.facebook.com/")
+    elif 'whatsapp' in command:
+        speak("opening your whatsapp")
+        webbrowser.open("https://web.whatsapp.com/")
+    elif 'discord' in command:
+        speak("opening your discord server")
+        webbrowser.open("https://discord.com/")
+    elif 'instagram' in command:
+        speak("opening your instagram")
+        webbrowser.open("https://www.instagram.com/")
+    else:
+        speak("No result found")
+
+def schedule():
+    day = cal_day().lower()
+    speak("Sir today's schedule is ")
+    week={
+    "monday": "today is a holiday, but keep an eye on upcoming deadlines and use this time to catch up on any reading or project work.",
+    "tuesday": "Today is a holiday, but tomorrow you must report to NRI Institute of Technology, so be ready for that.",
+    "wednesday": "ivala meru NRI institute of technology ki report cheyadaniki vellali so be ready for that.",
+    "thursday": "today is a holiday, but keep an eye on upcoming deadlines and use this time to catch up on any reading or project work.",
+    "friday": "today is a holiday, but keep an eye on upcoming deadlines and use this time to catch up on any reading or project work.",
+    "saturday": "today is a holiday, but keep an eye on upcoming deadlines and use this time to catch up on any reading or project work.",
+    "sunday": "today is a holiday, but keep an eye on upcoming deadlines and use this time to catch up on any reading or project work."
+    }
+    if day in week.keys():
+        speak(week[day])
+
+def openApp(command):
+    if "calculator" in command:
+        speak("opening calculator")
+        os.startfile('C:\\Windows\\System32\\calc.exe')
+    elif "notepad" in command:
+        speak("opening notepad")
+        os.startfile('C:\\Windows\\System32\\notepad.exe')
+    elif "paint" in command:
+        speak("opening paint")
+        os.startfile('C:\\Windows\\System32\\mspaint.exe')
+    elif "word" in command:
+        speak("opening Microsoft word")
+        os.startfile('C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE')
+    elif "excel" in command:
+        speak("opening Microsoft excel")
+        os.startfile('C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE')
+    elif "powerpoint" in command:
+        speak("opening Microsoft powerpoint")
+        os.startfile('C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE')
+    elif "browser" in command:
+        speak("opening your browser")
+        os.startfile('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
+    elif "file explorer" in command:
+        speak("opening file explorer")
+        os.startfile('C:\\Windows\\explorer.exe')
+    elif "task manager" in command:
+        speak("opening task manager")
+        os.startfile('C:\\Windows\\System32\\Taskmgr.exe')
+    elif "control panel" in command:
+        speak("opening control panel")
+        os.startfile('C:\\Windows\\System32\\control.exe')
+    elif "settings" in command:
+        speak("opening settings")
+        os.startfile('C:\\Windows\\System32\\ms-settings:')
+    elif "command prompt" in command:
+        speak("opening command prompt")
+        os.startfile('C:\\Windows\\System32\\cmd.exe')
+    elif "powershell" in command:
+        speak("opening powershell")
+        os.startfile('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
+    elif "vs code" in command:
+        speak("opening Visual Studio Code")
+        os.startfile('C:\\Program Files\\Microsoft VS Code\\Code.exe')
+
+def closeApp(command):
+    apps = {
+        "calculator": "calc.exe",
+        "notepad": "notepad.exe",
+        "paint": "mspaint.exe",
+        "word": "WINWORD.EXE",
+        "excel": "EXCEL.EXE",
+        "powerpoint": "POWERPNT.EXE",
+        "browser": "chrome.exe",
+        "file explorer": "explorer.exe",
+        "task manager": "Taskmgr.exe",
+        "control panel": "control.exe",
+        "settings": "ms-settings:",
+        "command prompt": "cmd.exe",
+        "powershell": "powershell.exe",
+        "vs code": "Code.exe"
+    }
+    for key, process in apps.items():
+        if key in command:
+            speak(f"Closing {key}")
+            os.system(f"taskkill /f /im {process}")
+            return
+
+def browsing(query):
+    if 'google' in query:
+        speak("Sir, what should i search on google..")
+        s = command().lower()
+        webbrowser.open(f"{s}")
+        os.startfile('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
+    # elif 'firefox' in query:
+    #     speak("opening your firefox browser")
+    #     os.startfile('C:\\Program Files\\Mozilla Firefox\\firefox.exe')
+    #     # elif 'edge' in query:
+    #     speak("opening your microsoft edge browser")
+    #     os.startfile('C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe')
+    # elif 'microsoft edge' in query:
+    #     speak("opening your microsoft edge browser")
+    #     os.startfile('C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe')
+    #     speak("opening your microsoft edge")
+    #     os.startfile()
+
+def condition():
+    usage = str(psutil.cpu_percent())
+    speak(f"CPU is at {usage} percentage")
+    battery = psutil.sensors_battery()
+    percentage = battery.percent
+    speak(f"sir our system have {percentage} percentage battery")
+
+    if percentage >=95:
+        speak("Sir our system is fully charged")
+    elif percentage >= 80:
+        speak("Sir our system is charged more than 80 percentage")
+    elif percentage >= 50:
+        speak("Sir our system is charged more than 50 percentage")
+    elif percentage >= 20:
+        speak("Sir our system is charged more than 20 percentage")
+    else:
+        speak("Sir our system is charged less than 20 percentage, please connect to charging point to continue our recording")
+    if battery.power_plugged:
+        speak("Sir our system is connected to charging point")
+    else:
+        speak("Sir our system is not connected to charging point, please connect to charging point to continue our recording")
+    if battery.power_unplugged:
+        speak("Sir our system is not connected to charging point, please connect to charging point to continue our recording")
+    else:
+        speak("Sir our system is connected to charging point, we can continue our recording")
+
+def system_info():
+    speak("Sir, I am gathering the system information for you.")
+    cpu_info = psutil.cpu_times()
+    memory_info = psutil.virtual_memory()
+    disk_info = psutil.disk_usage('/')
+    
+    speak(f"CPU Usage: {psutil.cpu_percent()}%")
+    speak(f"Memory Usage: {memory_info.percent}%")
+    speak(f"Disk Usage: {disk_info.percent}%")
+    
+    speak("System information gathered successfully.")
+
+def run_background_tasks():
+    """Run background tasks such as checking system condition and gathering system information."""
+    while True:
+        condition()
+        system_info()
+        time.sleep(3600)  # Check every hour
+def search(query):
+    """Search for a query on Google."""
+    speak(f"Searching for {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q={query}")
+def what_is(query):
+    """Search for a query on Wikipedia."""
+    speak(f"Searching for {query} on Wikipedia")
+    webbrowser.open(f"https://en.wikipedia.org/wiki/{query}")
+def who_is(query):
+    """Search for a person on Google."""
+    speak(f"Searching for {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q={query}")
+def where_is(query):
+    """Search for a location on Google Maps."""
+    speak(f"Searching for {query} on Google Maps")
+    webbrowser.open(f"https://www.google.com/maps/search/{query}")
+def when_is(query):
+    """Search for a date or event on Google."""
+    speak(f"Searching for {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q={query}")
+def how_to(query):
+    """Search for a how-to query on Google."""
+    speak(f"Searching for how to {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=how+to+{query}")
+def why_is(query):
+    """Search for a why query on Google."""
+    speak(f"Searching for why {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=why+{query}")
+def where_to(query):
+    """Search for a where query on Google."""
+    speak(f"Searching for where to {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=where+to+{query}")
+def what_is_the(query):
+    """Search for a what-is query on Google."""
+    speak(f"Searching for what is the {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=what+is+the+{query}")
+def what(query):
+    """Search for a what query on Google."""
+    speak(f"Searching for what {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=what+{query}")
+def who(query):
+    """Search for a who query on Google."""
+    speak(f"Searching for who {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=who+{query}")
+def where(query):
+    """Search for a where query on Google."""
+    speak(f"Searching for where {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=where+{query}")
+def when(query):
+    """Search for a when query on Google."""
+    speak(f"Searching for when {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=when+{query}")
+def how(query):
+    """Search for a how query on Google."""
+    speak(f"Searching for how {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=how+{query}")
+def why(query):
+    """Search for a why query on Google."""
+    speak(f"Searching for why {query} on Google")
+    webbrowser.open(f"https://www.google.com/search?q=why+{query}")
+def scan_qr_code():
+    """Scan a QR code using the webcam."""
+    speak("Please show the QR code to the camera.")
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+    
+    while True:
+        _, img = cap.read()
+        data, bbox, _ = detector(img)
+        if data:
+            speak(f"QR Code detected: {data}")
+            print(f"QR Code detected: {data}")
+            break
+        cv2.imshow("QR Code Scanner", img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+def scan_barcode():
+    """Scan a barcode using the webcam."""
+    speak("Please show the barcode to the camera.")
+    cap = cv2.VideoCapture(0)
+    detector = cv2.QRCodeDetector()
+    
+    while True:
+        _, img = cap.read()
+        data, bbox, _ = detector(img)
+        if data:
+            speak(f"Barcode detected: {data}")
+            print(f"Barcode detected: {data}")
+            break
+        cv2.imshow("Barcode Scanner", img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+def play_music():
+    """Play music from the user's music folder."""
+    music_folder = "C:\\Users\\Eeswar Uday\\Music"  # Change this to your music folder path
+    songs = os.listdir(music_folder)
+    if songs:
+        song = random.choice(songs)
+        speak(f"Playing {song}")
+        os.startfile(os.path.join(music_folder, song))
+    else:
+        speak("No music files found in the music folder.")
+def take_screenshot():
+    """Take a screenshot and save it to the user's desktop."""
+    screenshot = pyautogui.screenshot()
+    screenshot_path = os.path.join(os.path.expanduser("~"),"screenshot.png")
+    screenshot.save(screenshot.png)
+    speak(f"Screenshot taken and saved to {screenshot_path}")
+    print(f"Screenshot saved to {screenshot_path}")
+def record_audio():
+    """Record audio from the microphone and save it to a file."""
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        speak("Recording audio, please speak...")
+        audio = r.listen(source)
+        time.sleep(2)  # Wait for a moment to ensure the recording is complete
+        time.sleep(1)
+    if audio:
+        speak("Audio recording complete.")
+        print("Audio recording complete.")
+        # Stop the recording
+        speak("Stopping the audio recording.")
+        print("Stopping the audio recording.")
+
+        stop_recording_audio()
+        # Save the audio to a file
+        speak("Audio recorded, saving to file...")
+        with open("recorded_audio.wav", "wb") as f:
+            f.write(audio.get_wav_data())
+        speak("Audio saved as recorded_audio.wav")
+        print("Audio saved as recorded_audio.wav")
+def stop_recording_audio():
+    """Stop the audio recording."""
+    speak("Stopping the audio recording.")
+    print("Audio recording stopped.")
+    # Note: This function is a placeholder as the actual stopping logic depends on how the recording is implemented.
+def record_video():
+    """Record a video using the webcam."""
+    speak("Starting video recording. Press 'q' to stop.")
+    cap = cv2.VideoCapture(0)
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        out.write(frame)
+        cv2.imshow('Video Recording', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+    speak("Video recording stopped and saved as output.avi")
+    print("Video recording stopped and saved as output.avi")
+def stop_video_recording():
+    """Stop the video recording."""
+    speak("Stopping the video recording.")
+    print("Video recording stopped.")
+    # Note: This function is a placeholder as the actual stopping logic depends on how the recording is implemented.
+def send_email(to, subject, body):
+    """Send an email using the user's default email client."""
+    import smtplib
+    from email.mime.text import MIMEText
+    
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = 'uday90925@gmail.com'
+    msg['To'] = to
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login('uday90925@gmail.com', 'Uday@7uday')
+            server.sendmail('uday90925@gmail.com', to, msg.as_string())
+        speak("Email sent successfully.")
+        print("Email sent successfully.")
+    except Exception as e:
+        speak(f"Failed to send email: {str(e)}")
+        print(f"Failed to send email: {str(e)}")
+def send_message(to, message):
+    """Send a message using the user's default messaging app."""
+    import pywhatkit as kit
+    try:
+        kit.sendwhatmsg(to, message, 10, 0)  # Sends message at 10:00 AM
+        speak("Message sent successfully.")
+        print("Message sent successfully.")
+    except Exception as e:
+        speak(f"Failed to send message: {str(e)}")
+        print(f"Failed to send message: {str(e)}")
+def send_whatsapp_message(to, message):
+    """Send a WhatsApp message."""
+    import pywhatkit as kit
+    try:
+        kit.sendwhatmsg(to, message, 10, 0)  # Sends message at 10:00 AM
+        speak("WhatsApp message sent successfully.")
+        print("WhatsApp message sent successfully.")
+    except Exception as e:
+        speak(f"Failed to send WhatsApp message: {str(e)}")
+        print(f"Failed to send WhatsApp message: {str(e)}")
+def call(to):
+    """Make a call using the user's default calling app."""
+    import pywhatkit as kit
+    try:
+        kit.make_call(to)  # Make a call to the specified number
+        speak("Call initiated successfully.")
+        print("Call initiated successfully.")
+    except Exception as e:
+        speak(f"Failed to make a call: {str(e)}")
+        print(f"Failed to make a call: {str(e)}")
+def send_sms(to, message):
+    """Send an SMS using the user's default messaging app."""
+    import pywhatkit as kit
+    try:
+        kit.sendwhatmsg(to, message, 19,00  )  # Sends message at 10:00 AM
+        speak("SMS sent successfully.")
+        print("SMS sent successfully.")
+    except Exception as e:
+        speak(f"Failed to send SMS: {str(e)}")
+        print(f"Failed to send SMS: {str(e)}")
+def wifi_connect():
+    """Connect to a Wi-Fi network."""
+    speak("Please provide the Wi-Fi network name and password.")
+    ssid = command().lower()
+    password = command().lower()
+    try:
+        os.system(f"netsh wlan connect name={ssid} key={password}")
+        speak(f"Connected to {ssid} successfully.")
+        print(f"Connected to {ssid} successfully.")
+    except Exception as e:
+        speak(f"Failed to connect to Wi-Fi: {str(e)}")
+        print(f"Failed to connect to Wi-Fi: {str(e)}")
+def wifi_disconnect():
+    """Disconnect from the current Wi-Fi network."""
+    try:
+        os.system("netsh wlan disconnect")
+        speak("Disconnected from the Wi-Fi network successfully.")
+        print("Disconnected from the Wi-Fi network successfully.")
+    except Exception as e:
+        speak(f"Failed to disconnect from Wi-Fi: {str(e)}")
+        print(f"Failed to disconnect from Wi-Fi: {str(e)}")
+def turn_on_wifi():
+    """Turn on the Wi-Fi adapter."""
+    try:
+        os.system("netsh interface set interface name='Wi-Fi' admin=enabled")
+        speak("Wi-Fi turned on successfully.")
+        print("Wi-Fi turned on successfully.")
+    except Exception as e:
+        speak(f"Failed to turn on Wi-Fi: {str(e)}")
+        print(f"Failed to turn on Wi-Fi: {str(e)}")
+def turn_off_wifi():
+    """Turn off the Wi-Fi adapter."""
+    try:
+        os.system("netsh interface set interface name='Wi-Fi' admin=disabled")
+        speak("Wi-Fi turned off successfully.")
+        print("Wi-Fi turned off successfully.")
+    except Exception as e:
+        speak(f"Failed to turn off Wi-Fi: {str(e)}")
+        print(f"Failed to turn off Wi-Fi: {str(e)}")
+def bluetooth_on():
+    """Turn on the Bluetooth adapter."""
+    try:
+        os.system("start ms-settings:bluetooth")
+        speak("Bluetooth turned on successfully.")
+        print("Bluetooth turned on successfully.")
+    except Exception as e:
+        speak(f"Failed to turn on Bluetooth: {str(e)}")
+        print(f"Failed to turn on Bluetooth: {str(e)}")
+def bluetooth_off():
+    """Turn off the Bluetooth adapter."""
+    try:
+        os.system("start ms-settings:bluetooth")
+        speak("Bluetooth turned off successfully.")
+        print("Bluetooth turned off successfully.")
+    except Exception as e:
+        speak(f"Failed to turn off Bluetooth: {str(e)}")
+        print(f"Failed to turn off Bluetooth: {str(e)}")
+def turn_on_battery_saver():
+    """Turn on the battery saver mode."""
+    try:
+        os.system("powercfg /setacvalueindex SCHEME_CURRENT SUB_BATTERY BATACTION 1")
+        os.system("powercfg /setactive SCHEME_CURRENT")
+        speak("Battery saver mode turned on successfully.")
+        print("Battery saver mode turned on successfully.")
+    except Exception as e:
+        speak(f"Failed to turn on battery saver mode: {str(e)}")
+        print(f"Failed to turn on battery saver mode: {str(e)}")
+def turn_off_battery_saver():
+    """Turn off the battery saver mode."""
+    try:
+        os.system("powercfg /setacvalueindex SCHEME_CURRENT SUB_BATTERY BATACTION 0")
+        os.system("powercfg /setactive SCHEME_CURRENT")
+        speak("Battery saver mode turned off successfully.")
+        print("Battery saver mode turned off successfully.")
+    except Exception as e:
+        speak(f"Failed to turn off battery saver mode: {str(e)}")
+        print(f"Failed to turn off battery saver mode: {str(e)}")
+def keyboard_light_on():
+    """Turn on the keyboard backlight."""
+    try:
+        os.system("powershell -command \"(Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, 100)\"")
+        speak("Keyboard backlight turned on successfully.")
+        print("Keyboard backlight turned on successfully.")
+    except Exception as e:
+        speak(f"Failed to turn on keyboard backlight: {str(e)}")
+        print(f"Failed to turn on keyboard backlight: {str(e)}")
+def keyboard_light_off():
+    """Turn off the keyboard backlight."""
+    try:
+        os.system("powershell -command \"(Get-WmiObject -Namespace root\\wmi -Class WmiMonitorBrightnessMethods).WmiSetBrightness(1, 0)\"")
+        speak("Keyboard backlight turned off successfully.")
+        print("Keyboard backlight turned off successfully.")
+    except Exception as e:
+        speak(f"Failed to turn off keyboard backlight: {str(e)}")
+        print(f"Failed to turn off keyboard backlight: {str(e)}")
+def bluetooth_connect():
+    """Connect to a Bluetooth device."""
+    speak("Please provide the Bluetooth device name.")
+    device_name = command().lower()
+    try:
+        os.system(f"start ms-settings:bluetooth")
+        speak(f"Connecting to {device_name}...")
+        print(f"Connecting to {device_name}...")
+        # Note: Actual connection logic Friday vary based on the system and device
+    except Exception as e:
+        speak(f"Failed to connect to Bluetooth: {str(e)}")
+        print(f"Failed to connect to Bluetooth: {str(e)}")
+def bluetooth_disconnect():
+    """Disconnect from a Bluetooth device."""
+    speak("Please provide the Bluetooth device name to disconnect.")
+    device_name = command().lower()
+    try:
+        os.system(f"start ms-settings:bluetooth")
+        speak(f"Disconnecting from {device_name}...")
+        print(f"Disconnecting from {device_name}...")
+        # Note: Actual disconnection logic Friday vary based on the system and device
+    except Exception as e:
+        speak(f"Failed to disconnect from Bluetooth: {str(e)}")
+        print(f"Failed to disconnect from Bluetooth: {str(e)}")
+def open_camera():
+    """Open the webcam and display the video feed."""
+    speak("Opening the camera.")
+    cap = cv2.VideoCapture(0)
+    
+    if not cap.isOpened():
+        speak("Failed to open the camera.")
+        print("Failed to open the camera.")
+        return
+    
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            speak("Failed to capture video.")
+            print("Failed to capture video.")
+            break
+        
+        cv2.imshow("Camera", frame)
+        
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    
+    cap.release()
+    cv2.destroyAllWindows()
+def close_camera():
+    """Close the webcam."""
+    speak("Closing the camera.")
+    print("Camera closed.")
+    # Note: This function is a placeholder as the actual closing logic depends on how the camera is opened.
+def scan_and_explain():
+    """scan the screen and explain the content."""
+    speak("Scanning the screen and explaining the content.")
+    # Note: This function is a placeholder as the actual scanning and explaining logic depends on the specific requirements.
+    # You can use OCR libraries like pytesseract to extract text from the screen and then explain it.
+    print("This feature is under development. Please check back later.")
+def open_file(file_path):
+    """Open a file using the default application."""
+    if os.path.exists(file_path):
+        speak(f"Opening {file_path}")
+        os.startfile(file_path)
+    else:
+        speak(f"The file {file_path} does not exist.")
+        print(f"The file {file_path} does not exist.")
+def close_file(file_path):
+    """Close a file using the default application."""
+    if os.path.exists(file_path):
+        speak(f"Closing {file_path}")
+        os.system(f"taskkill /f /im {os.path.basename(file_path)}")
+    else:
+        speak(f"The file {file_path} does not exist.")
+        print(f"The file {file_path} does not exist.")
+def open_chatgpt():
+    """Open the ChatGPT website."""
+    speak("Opening ChatGPT.")
+    webbrowser.open("https://chat.openai.com/")
+    print("ChatGPT opened in your default browser.")
+def close_chatgpt():
+    """Close the ChatGPT website."""
+    speak("Closing ChatGPT.")
+    # Note: This function is a placeholder as the actual closing logic depends on how the browser is opened.
+    print("ChatGPT closed in your default browser.")
+def open_youtube():
+    """Open YouTube in the default browser."""
+    speak("Opening YouTube.")
+    webbrowser.open("https://www.youtube.com/")
+    print("YouTube opened in your default browser.")
+def close_youtube():
+    """Close YouTube in the default browser."""
+    speak("Closing YouTube.")
+    # Note: This function is a placeholder as the actual closing logic depends on how the browser is opened.
+    print("YouTube closed in your default browser.")
+def open_openai():
+    """Open OpenAI in the default browser."""
+    speak("Opening OpenAI.")
+    webbrowser.open("https://www.openai.com/")
+    print("OpenAI opened in your default browser.")
+def close_openai():
+    """Close OpenAI in the default browser."""
+    speak("Closing OpenAI.")
+    # Note: This function is a placeholder as the actual closing logic depends on how the browser is opened.
+    print("OpenAI closed in your default browser.")
+def on_flash():
+    """Turn on the flashlight."""
+    speak("Turning on the flashlight.")
+    # Note: This function is a placeholder as the actual logic to turn on the flashlight depends on the device.
+    print("Flashlight turned on.")
+def off_flash():
+    """Turn off the flashlight."""
+    speak("Turning off the flashlight.")
+    # Note: This function is a placeholder as the actual logic to turn off the flashlight depends on the device.
+    print("Flashlight turned off.")
+def create_reminder(reminder):
+    """Create a reminder."""
+    speak(f"Creating a reminder: {reminder}")
+    # Note: This function is a placeholder as the actual logic to create a reminder depends on the specific requirements.
+    print(f"Reminder created: {reminder}")
+def create_alarm(time):
+    """Create an alarm."""
+    speak(f"Creating an alarm for {time}")
+    # Note: This function is a placeholder as the actual logic to create an alarm depends on the specific requirements.
+    print(f"Alarm created for {time}")
+def create_event(event):
+    """Create an event."""
+    speak(f"Creating an event: {event}")
+    # Note: This function is a placeholder as the actual logic to create an event depends on the specific requirements.
+    print(f"Event created: {event}")
+def create_a_website(website):
+    """Create a webp8site."""
+    speak(f"Creating a website: {website}")
+    # Note: This function is a placeholder as the actual logic to create a website depends on the specific requirements.
+    print(f"Website created: {website}")
+def create_a_ai_video(video):
+    """Create an AI video."""
+    speak(f"Creating an AI video: {video}")
+    # Note: This function is a placeholder as the actual logic to create an AI video depends on the specific requirements.
+    print(f"AI video created: {video}")
+def open_powershell():
+    """Open PowerShell."""
+    speak("Opening PowerShell.")
+    os.startfile('C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe')
+    print("PowerShell opened.")
+def close_powershell():
+    """Close PowerShell."""
+    speak("Closing PowerShell.")
+    os.system("taskkill /f /im powershell.exe")
+    print("PowerShell closed.")
+import webbrowser
+import time
+import pyautogui
+import re
+
+def text_to_digits(text):
+    word_to_digit = {
+        "zero": "0", "one": "1", "two": "2", "three": "3", "four": "4",
+        "five": "5", "six": "6", "seven": "7", "eight": "8", "nine": "9"
+    }
+    words = text.lower().split()
+    digits = "".join(word_to_digit.get(word, "") for word in words)
+    return digits
+
+def whatsapp_call(phone_number):
+    try:
+        url = f"https://wa.me/91{phone_number}"
+        speak(f"Calling {phone_number} on WhatsApp.")
+        webbrowser.open(url)
+        time.sleep(8)  # wait for WhatsApp web to open
+
+        # Click call icon (optional)
+        # pyautogui.click(x=1230, y=170)  # Adjust coordinates if needed
+    except Exception as e:
+        print("❌ WhatsApp call error:", e)
+        speak("Sorry, I couldn't place the WhatsApp call.")
+
+
+
+if __name__ == "__main__":
+    greeting()
+# engine_talk("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+# engine_talk("I am here to assist you with various tasks and provide information as needed
+# engine_talk("Allow me to introduce myself I am Friday, the virtual artificial intelligence and I'm here to assist you with a variety of tasks as best I can, 24 hours a day seven days a week.")
+query = command().lower()
+while True:
+        query = command().lower()
+        # query  = input("Enter your command-> ")
+        if wake_word_trigger(query):
+            if "Friday" in query or "hey Friday" in query or "hello Friday" in query or "hi Friday" in query:
+                speak("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+                print("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+            else:
+                speak("I didn't understand that. Please try again.")
+                continue
+        elif ('facebook' in query) or ('discord' in query) or ('whatsapp' in query) or ('instagram' in query):
+            social_media(query)
+        elif "hello" in query or "hi" in query:
+            speak("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+        elif "hi Friday" in query or "hello Friday" in query:
+            speak("Hello Sir, I am Friday, your virtual assistant. How can I help you today?")
+        elif "nuvvu evaru" in query or "nuvvu evaru" in query or "nuvvu evaru Friday" in query or "nuvvu evaru Friday" in query:
+            speak("Hello Sir, nenu Friday, me virtual assistant. Nenu meeku chala tasks lo sahayam cheyadaniki ikada unnanu. Meeku evaraina sahayam kavali ante, nenu ikada unnanu.")
+        elif ("College time table" in query) or ("schedule" in query):
+            schedule()
+        elif ("volume up" in query) or ("increase volume" in query):
+            pyautogui.press("volumeup")
+            speak("Volume increased")
+        elif ("volume down" in query) or ("decrease volume" in query):
+            pyautogui.press("volumedown")
+            speak("Volume decrease")
+        elif ("volume mute" in query) or ("mute the sound" in query):
+            pyautogui.press("volumemute")
+            speak("Volume muted")
+        elif ("open calculator" in query) or ("open notepad" in query) or ("open paint" in query) or ("open word" in query) or ("open excel" in query) or ("open powerpoint" in query) or ("open browser" in query) or ("open file explorer" in query) or ("open task manager" in query) or ("open control panel" in query) or ("open settings" in query) or ("open command prompt" in query) or ("open powershell" in query) or ("open vs code" in query):
+            openApp(query)
+        elif ("close calculator" in query) or ("close notepad" in query) or ("close paint" in query) or ("close word" in query) or ("close excel" in query) or ("close powerpoint" in query) or ("close browser" in query) or ("close file explorer" in query) or ("close task manager" in query) or ("close control panel" in query) or ("close settings" in query) or ("close command prompt" in query) or ("close powershell" in query) or ("close vs code" in query):
+            closeApp(query)
+        elif ("shutdown" in query) or ("shut down" in query):
+            speak("Shutting down the system")
+            pyautogui.alert("System will shut down in 5 seconds. Please save your work.")
+            time.sleep(5)
+            os.system("shutdown /s /t 1")
+        elif ("restart" in query) or ("reboot" in query):
+            speak("Restarting the system")
+            pyautogui.alert("System will restart in 5 seconds. Please save your work.")
+            time.sleep(5)
+            os.system("shutdown /r /t 1")
+        elif ("sleep" in query) or ("hibernate" in query):
+            speak("Putting the system to sleep")
+            pyautogui.alert("System will go to sleep in 5 seconds. Please save your work.")
+            time.sleep(5)
+            os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+        elif ("who am i" in query):
+            who_am_i(query)
+        elif ("who are you" in query) or ("who is Friday" in query) or ("who is your name"in query) or ("what is you name" in query):
+            who_are_you(query)
+        elif ("who is your creator" in query) or ("who created you" in query) or ("who made you" in query) or ("who created Friday" in query) or ("who is Friday creator" in query):
+            who_is_your_creator()
+        elif ("open google" in query) or ("open edge" in query):
+            browsing(query)
+        elif ("system condition" in query) or ("condition of the system" in query):
+            speak("checking the system condition")
+            condition()
+        elif ("system information" in query) or ("system info" in query):
+            speak("gathering system information")
+            system_info()
+        elif ("current time" in query) or ("time" in query):
+            cal_time()
+        elif ("current date" in query) or ("date" in query):
+            cal_date()
+        elif ("current year" in query) or ("year" in query):
+            cal_year()
+        elif ("current month" in query) or ("month" in query):
+            cal_month()
+        elif ("birth day wish" in query) or ("wish birthday" in query):
+            birth_day_wish()
+        elif ("day" in query) or ("current day" in query):
+            cal_day()
+        elif ("run backgroud tasks" in query) or ("background tasks" in query):
+            speak("Running background tasks")
+            run_background_tasks()
+        elif ("search" in query):
+            search_query = query.replace("search", "").strip()
+            speak(f"Searching for {search_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={search_query}")
+        elif ("what is" in query):
+           what_query = query.replace("what is", "").strip()
+           speak("f searching for {what_query} on Wikipedia")
+           webbrowser.open(f"https://en.wikipedia.org/wiki/{what_query}")
+        elif ("who is" in query):
+            who_query = query.replace("who is", "").strip()
+            speak(f"Searching for {who_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={who_query}")
+        elif ("where is" in query):
+            where_query = query.replace("where is", "").strip()
+            speak(f"Searching for {where_query} on Google Maps")
+            webbrowser.open(f"https://www.google.com/maps/search/{where_query}")
+        elif ("when is" in query):
+            when_query = query.replace("when is", "").strip()
+            speak(f"Searching for {when_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={when_query}")
+        elif ("how to" in query):
+            how_query = query.replace("how to", "").strip()
+            speak(f"Searching for how to {how_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q=how+to+{how_query}")
+        elif ("why is" in query):
+            why_query = query.replace("why is", "").strip()
+            speak(f"Searching for why {why_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q=why+{why_query}")
+        elif ("where to" in query):
+            where_query = query.replace("where to", "").strip()
+            speak(f"Searching for where to {where_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q=where+to+{where_query}")
+        elif ("what is the" in query):
+            what_query = query.replace("what is the", "").strip()
+            speak(f"Searching for what is the {what_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q=what+is+the+{what_query}")
+        elif ("what" in query):
+            what_query = query.replace("what", "").strip()
+            speak(f"Searching for {what_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={what_query}")
+        elif ("who" in query):
+            who_query = query.replace("who", "").strip()
+            speak(f"Searching for {who_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={who_query}")
+        elif ("where" in query):
+            where_query = query.replace("where", "").strip()
+            speak(f"Searching for {where_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={where_query}")
+        elif ("when" in query):
+            when_query = query.replace("when", "").strip()
+            speak(f"Searching for {when_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={when_query}")
+        elif ("how" in query):
+            how_query = query.replace("how", "").strip()
+            speak(f"Searching for {how_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={how_query}")
+        elif ("why" in query):
+            why_query = query.replace("why", "").strip()
+            speak(f"Searching for {why_query} on Google")
+            webbrowser.open(f"https://www.google.com/search?q={why_query}")
+        elif ("scan qr code" in query):
+            speak("Scanning QR code")
+            scan_qr_code()
+        elif ("scan barcode" in query):
+            speak("Scanning barcode")
+            scan_barcode()
+        elif ("play music" in query) or ("play song" in query):
+            speak("Playing music")
+            play_music()
+        elif ("take screenshot" in query) or ("screenshot" in query):
+            speak("Taking screenshot")
+            take_screenshot()
+        elif ("record audio" in query) or ("audio recording" in query):
+            speak("Recording audio")
+            record_audio()
+        elif ("stop audio recording" in query) or ("stop recording" in query):
+            speak("Stopping audio recording")
+            stop_recording_audio()
+        elif ("record video" in query) or ("video recording" in query):
+            speak("Recording video")
+            record_video()
+        elif ("stop video recording" in query) or ("stop video" in query):
+            speak("Stopping video recording")
+            stop_video_recording()
+        elif ("open camera" in query) or ("camera" in query):
+            speak("Opening camera")
+            open_camera()
+        elif ("close camera" in query) or ("camera off" in query):
+            speak("Closing camera")
+            close_camera()
+        elif ("scan and explain" in query):
+            speak("Scanning the screen and explaining the content")
+            scan_and_explain()
+        elif ("open file" in query):
+            speak("Please provide the file path to open.")
+            file_path = command().lower()
+            open_file(file_path)
+        elif ("connect bluetooth" in query):
+            speak("Please provide the Bluetooth device name to connect.")
+            bluetooth_connect()
+        elif ("disconnect bluetooth" in query):
+            speak("Please provide the Bluetooth device name to disconnect.")
+            bluetooth_disconnect()
+        elif ("send email" in query):
+            speak("Please provide the recipient's email address.")
+            to_email = command().lower()
+            speak("Please provide the subject of the email.")
+            subject = command().lower()
+            speak("Please provide the body of the email.")
+            body = command().lower()
+            send_email(to_email, subject, body)
+        elif ("send message" in query):
+            speak("Please provide the recipient's phone number.")
+            to_number = command().lower()
+            speak("Please provide the message you want to send.")
+            message = command().lower()
+            send_message(to_number, message)
+        elif ("send whatsapp message" in query):
+            speak("Please provide the recipient's phone number.")
+            to_number = command().lower()
+            speak("Please provide the message you want to send.")
+            message = command().lower()
+            send_whatsapp_message(to_number, message)
+        elif ("make call" in query):
+            speak("Please provide the phone number you want to call.")
+            to_number = command().lower()
+            call(to_number)
+        elif ("send sms" in query):
+            speak("Please provide the recipient's phone number.")
+            to_number = command().lower()
+            speak("Please provide the message you want to send.")
+            message = command().lower()
+            send_sms(to_number, message)
+        elif "whatsapp call" in query:
+            speak("Please provide the phone number you want to call on WhatsApp.")
+            number_input = command().lower()
+            phone_number = text_to_digits(number_input)
+
+            if len(phone_number) >= 10:
+                whatsapp_call(phone_number)
+            else:
+                speak("That doesn't seem like a valid number. Please try again.")
+        elif ("whatsapp call" in query):
+            speak("Please provide the phone number you want to call on WhatsApp.")
+            to_number = command().lower()
+            whatsapp_call(to_number)
+
+        elif ("connect to wifi" in query):
+            speak("Please provide the Wi-Fi network name and password.")
+            wifi_connect()
+        elif ("disconnect from wifi" in query):
+            speak("Disconnecting from the current Wi-Fi network.")
+            wifi_disconnect()
+        elif ("turn on wifi" in query):
+            speak("Turning on the Wi-Fi adapter.")
+            turn_on_wifi()
+        elif ("turn off wifi" in query):
+            speak("Turning off the Wi-Fi adapter.")
+            turn_off_wifi()
+        elif ("turn on bluetooth" in query):
+            speak("Turning on the Bluetooth adapter.")
+            bluetooth_on()
+        elif ("turn off bluetooth" in query):
+            speak("Turning off the Bluetooth adapter.")
+            bluetooth_off()
+        elif ("turn on battery saver" in query):
+            speak("Turning on the battery saver mode.")
+            turn_on_battery_saver()
+        elif ("turn off battery saver" in query):
+            speak("Turning off the battery saver mode.")
+            turn_off_battery_saver()
+        elif ("turn on keyboard light" in query):
+            speak("Turning on the keyboard backlight.")
+            keyboard_light_on()
+        elif ("turn off keyboard light" in query):
+            speak("Turning off the keyboard backlight.")
+            keyboard_light_off()
+        elif ("open chatgpt" in query):
+            speak("Opening ChatGPT.")
+            open_chatgpt()
+        elif ("close chatgpt" in query):
+            speak("Closing ChatGPT.")
+            close_chatgpt()
+        elif ("open youtube" in query):
+            speak("Opening YouTube.")
+            open_youtube()
+        elif ("close youtube" in query):
+            speak("Closing YouTube.")
+            close_youtube()
+        elif ("open openai" in query):
+            speak("Opening OpenAI.")
+            open_openai()
+        elif ("close openai" in query):
+            speak("Closing OpenAI.")
+            close_openai()
+        elif ("turn on flash" in query) or ("flash on" in query):
+            speak("Turning on the flashlight.")
+            on_flash()
+        elif ("turn off flash" in query) or ("flash off" in query):
+            speak("Turning off the flashlight.")
+            off_flash()
+        elif ("create reminder" in query):
+            speak("Please provide the reminder details.")
+            reminder = command().lower()
+            create_reminder(reminder)
+        elif ("create alarm" in query):
+            speak("Please provide the time for the alarm.")
+            time = command().lower()
+            create_alarm(time)
+        elif ("create event" in query):
+            speak("Please provide the event details.")
+            event = command().lower()
+            create_event(event)
+        elif ("create a website" in query):
+            speak("Please provide the website details.")
+            website = command().lower()
+            create_a_website(website)
+        elif ("create a ai video" in query):
+            speak("Please provide the AI video details.")
+            video = command().lower()
+            create_a_ai_video(video)
+        elif "exit" in query:
+            speak("Goodbye Sir, have a nice day!")
+            sys.exit()
+        elif "quit" in query:
+            speak("Goodbye Sir, have a nice day!")
+            sys.exit()
+        elif "stop" in query:
+            speak("Goodbye Sir, have a nice day!")
+            sys.exit()
+        elif "open powershell" in query:
+            open_powershell()
+        elif "close powershell" in query:
+            close_powershell()
+# speak("Hello, I'm Friday")
