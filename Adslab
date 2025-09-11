@@ -1,0 +1,459 @@
+3.
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+const int T = 3; // Minimum degree (defines the range for number of keys)
+
+class BTreeNode {
+    vector<int> keys;
+    vector<BTreeNode*> children;
+    bool leaf;
+    int t;
+
+public:
+    BTreeNode(int _t, bool _leaf) : t(_t), leaf(_leaf) {
+        keys.reserve(2 * t - 1);
+        children.reserve(2 * t);
+    }
+
+    void insertNonFull(int k);
+    void splitChild(int i, BTreeNode* y);
+    void traverse();
+
+    friend class BTree;
+};
+
+class BTree {
+    BTreeNode* root;
+    int t;
+
+public:
+    BTree(int _t) : t(_t) {
+        root = new BTreeNode(t, true);
+    }
+
+    void traverse() {
+        if (root != nullptr) root->traverse();
+    }
+
+    void insert(int k) {
+        if (root->keys.size() == 2 * t - 1) {
+            BTreeNode* s = new BTreeNode(t, false);
+            s->children.push_back(root);
+            s->splitChild(0, root);
+            root = s;
+        }
+        root->insertNonFull(k);
+    }
+};
+
+void BTreeNode::insertNonFull(int k) {
+    int i = keys.size() - 1;
+    if (leaf) {
+        keys.push_back(0);
+        while (i >= 0 && keys[i] > k) {
+            keys[i + 1] = keys[i];
+            i--;
+        }
+        keys[i + 1] = k;
+    } else {
+        while (i >= 0 && keys[i] > k) {
+            i--;
+        }
+        i++;
+        if (children[i]->keys.size() == 2 * t - 1) {
+            splitChild(i, children[i]);
+            if (keys[i] < k) i++;
+        }
+        children[i]->insertNonFull(k);
+    }
+}
+
+void BTreeNode::splitChild(int i, BTreeNode* y) {
+    BTreeNode* z = new BTreeNode(y->t, y->leaf);
+    for (int j = 0; j < t - 1; j++) {
+        z->keys.push_back(y->keys[j + t]);
+    }
+    if (!y->leaf) {
+        for (int j = 0; j < t; j++) {
+            z->children.push_back(y->children[j + t]);
+        }
+    }
+    y->keys.resize(t - 1);
+    y->children.resize(t);
+    children.insert(children.begin() + i + 1, z);
+    keys.insert(keys.begin() + i, y->keys[t - 1]);
+}
+
+void BTreeNode::traverse() {
+    int i;
+    for (i = 0; i < keys.size(); i++) {
+        if (!leaf) children[i]->traverse();
+        cout << keys[i] << " ";
+    }
+    if (!leaf) children[i]->traverse();
+}
+
+int main() {
+    BTree t(T);
+
+    t.insert(10);
+    t.insert(20);
+    t.insert(5);
+    t.insert(6);
+    t.insert(15);
+    t.insert(30);
+    t.insert(25);
+    t.insert(35);
+
+    cout << "Traversal of the constructed B-tree is: ";
+    t.traverse();
+    cout << endl;
+
+    return 0;
+}
+4a
+#include <iostream>
+#include <vector>
+#include <list>
+#include <queue>
+#include <stack>
+
+using namespace std;
+
+class Graph {
+    int V;  // Number of vertices
+    list<int>* adj;  // Pointer to an array containing adjacency lists
+
+public:
+    Graph(int V);  // Constructor
+
+    void addEdge(int v, int w);  // Function to add an edge to graph
+
+    void BFT(int s);  // Function for Breadth-First Traversal starting from a given source
+
+    void DFT(int s);  // Function for Depth-First Traversal starting from a given source
+
+    void DFTUtil(int v, bool visited[]);  // A utility function used by DFT
+};
+
+Graph::Graph(int V) {
+    this->V = V;
+    adj = new list<int>[V];
+}
+
+void Graph::addEdge(int v, int w) {
+    adj[v].push_back(w);  // Add w to v’s list.
+}
+
+void Graph::BFT(int s) {
+    // Mark all the vertices as not visited
+    vector<bool> visited(V, false);
+
+    // Create a queue for BFT
+    queue<int> queue;
+
+    // Mark the current node as visited and enqueue it
+    visited[s] = true;
+    queue.push(s);
+
+    while (!queue.empty()) {
+        // Dequeue a vertex from queue and print it
+        s = queue.front();
+        cout << s << " ";
+        queue.pop();
+
+        // Get all adjacent vertices of the dequeued vertex s
+        // If an adjacent has not been visited, then mark it visited and enqueue it
+        for (auto i = adj[s].begin(); i != adj[s].end(); ++i) {
+            if (!visited[*i]) {
+                visited[*i] = true;
+                queue.push(*i);
+            }
+        }
+    }
+}
+
+void Graph::DFTUtil(int v, bool visited[]) {
+    // Mark the current node as visited and print it
+    visited[v] = true;
+    cout << v << " ";
+
+    // Recur for all the vertices adjacent to this vertex
+    for (auto i = adj[v].begin(); i != adj[v].end(); ++i)
+        if (!visited[*i])
+            DFTUtil(*i, visited);
+}
+
+void Graph::DFT(int s) {
+    // Mark all the vertices as not visited
+    bool* visited = new bool[V];
+    for (int i = 0; i < V; i++)
+        visited[i] = false;
+
+    // Call the recursive helper function to print DFT traversal
+    DFTUtil(s, visited);
+}
+
+int main() {
+    Graph g(6);
+
+    g.addEdge(0, 1);
+    g.addEdge(0, 2);
+    g.addEdge(1, 3);
+    g.addEdge(1, 4);
+    g.addEdge(2, 5);
+
+    cout << "Breadth First Traversal (starting from vertex 0): ";
+    g.BFT(0);
+
+    cout << "\nDepth First Traversal (starting from vertex 0): ";
+    g.DFT(0);
+
+    return 0;
+}
+4b
+#include <iostream>
+#include <vector>
+#include <list>
+#include <stack>
+using namespace std;
+
+class Graph {
+    int V; // Number of vertices
+    list<int> *adj; // Adjacency list
+    int time; // Timer used in DFS
+    
+    // A utility function to find biconnected components using DFS
+    void BCCUtil(int u, int disc[], int low[], stack<pair<int, int>> &st, int parent[]);
+    
+public:
+    Graph(int V); // Constructor
+    void addEdge(int v, int w); // Function to add an edge
+    void BCC(); // Function to find biconnected components
+};
+
+// Constructor
+Graph::Graph(int V) {
+    this->V = V;
+    adj = new list<int>[V];
+    time = 0;
+}
+
+// Function to add an edge
+void Graph::addEdge(int v, int w) {
+    adj[v].push_back(w);
+    adj[w].push_back(v); // Since it's an undirected graph
+}
+
+// DFS based function to find biconnected components
+void Graph::BCCUtil(int u, int disc[], int low[], stack<pair<int, int>> &st, int parent[]) {
+    // Initialize discovery time and low value
+    disc[u] = low[u] = ++time;
+    int children = 0;
+
+    // Go through all vertices adjacent to this
+    for (auto v : adj[u]) {
+        // If v is not visited
+        if (disc[v] == -1) {
+            children++;
+            parent[v] = u;
+            st.push({u, v}); // Store the edge in the stack
+
+            // Recur for DFS
+            BCCUtil(v, disc, low, st, parent);
+
+            // Check if the subtree rooted at v has a connection back to an ancestor of u
+            low[u] = min(low[u], low[v]);
+
+            // If u is an articulation point, pop all edges till (u, v)
+            if ((parent[u] == -1 && children > 1) || (parent[u] != -1 && low[v] >= disc[u])) {
+                cout << "Biconnected Component: ";
+                while (st.top().first != u || st.top().second != v) {
+                    cout << "(" << st.top().first << ", " << st.top().second << ") ";
+                    st.pop();
+                }
+                cout << "(" << st.top().first << ", " << st.top().second << ")\n";
+                st.pop();
+            }
+        }
+        // Update low value of u for parent function calls
+        else if (v != parent[u]) {
+            low[u] = min(low[u], disc[v]);
+            if (disc[v] < disc[u]) {
+                st.push({u, v});
+            }
+        }
+    }
+}
+
+// Function to find and print biconnected components
+void Graph::BCC() {
+    int *disc = new int[V];
+    int *low = new int[V];
+    int *parent = new int[V];
+    stack<pair<int, int>> st;
+
+    // Initialize parent and visited arrays
+    for (int i = 0; i < V; i++) {
+        disc[i] = -1;
+        low[i] = -1;
+        parent[i] = -1;
+    }
+
+    // Call the recursive helper function to find biconnected components
+    for (int i = 0; i < V; i++) {
+        if (disc[i] == -1) {
+            BCCUtil(i, disc, low, st, parent);
+        }
+
+        // If stack is not empty, pop all the edges to form a biconnected component
+        while (!st.empty()) {
+            cout << "Biconnected Component: ";
+            cout << "(" << st.top().first << ", " << st.top().second << ") ";
+            st.pop();
+            cout << endl;
+        }
+    }
+
+    delete[] disc;
+    delete[] low;
+    delete[] parent;
+}
+
+int main() {
+    // Create graph with 5 vertices
+    Graph g(5);
+
+    g.addEdge(0, 1);
+    g.addEdge(0, 2);
+    g.addEdge(1, 2);
+    g.addEdge(1, 3);
+    g.addEdge(3, 4);
+
+    cout << "Biconnected components in the graph are:\n";
+    g.BCC();
+
+    return 0;
+}
+.....ADS 
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+
+using namespace std;
+using namespace std::chrono;
+
+// Function to perform quicksort
+int partition(vector<int>& arr, int low, int high) {
+    int pivot = arr[high];
+    int i = (low - 1);
+    
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] < pivot) {
+            i++;
+            swap(arr[i], arr[j]);
+        }
+    }
+    swap(arr[i + 1], arr[high]);
+    return (i + 1);
+}
+
+void quickSort(vector<int>& arr, int low, int high) {
+    if (low < high) {
+        int pi = partition(arr, low, high);
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}
+
+// Function to merge two halves for merge sort
+void merge(vector<int>& arr, int l, int m, int r) {
+    int n1 = m - l + 1;
+    int n2 = r - m;
+    vector<int> L(n1), R(n2);
+
+    for (int i = 0; i < n1; i++)
+        L[i] = arr[l + i];
+    for (int i = 0; i < n2; i++)
+        R[i] = arr[m + 1 + i];
+
+    int i = 0, j = 0, k = l;
+    while (i < n1 && j < n2) {
+        if (L[i] <= R[j]) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+// Function to perform merge sort
+void mergeSort(vector<int>& arr, int l, int r) {
+    if (l < r) {
+        int m = l + (r - l) / 2;
+        mergeSort(arr, l, m);
+        mergeSort(arr, m + 1, r);
+        merge(arr, l, m, r);
+    }
+}
+
+// Function to generate a vector of random integers
+vector<int> generateRandomVector(int size) {
+    vector<int> arr(size);
+    for (int i = 0; i < size; i++) {
+        arr[i] = rand() % 10000; // Random integers between 0 and 9999
+    }
+    return arr;
+}
+
+// Function to measure and print execution time
+void measureExecutionTime(void (*sortFunction)(vector<int>&, int, int), vector<int> arr, string sortName) {
+    auto start = high_resolution_clock::now();
+    sortFunction(arr, 0, arr.size() - 1);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << sortName << " took " << duration.count() << " microseconds" << endl;
+}
+
+int main() {
+    // Vector sizes for testing
+    vector<int> sizes = {1000, 5000, 10000, 50000, 100000};
+
+    for (int size : sizes) {
+        vector<int> arr = generateRandomVector(size);
+        cout << "\nArray Size: " << size << endl;
+        
+        // Measure Quick Sort
+        vector<int> quickSortArr = arr;
+        measureExecutionTime(quickSort, quickSortArr, "Quick Sort");
+
+        // Measure Merge Sort
+        vector<int> mergeSortArr = arr;
+        auto start = high_resolution_clock::now();
+        mergeSort(mergeSortArr, 0, mergeSortArr.size() - 1);
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+        cout << "Merge Sort took " << duration.count() << " microseconds" << endl;
+    }
+
+    return 0;
+}
